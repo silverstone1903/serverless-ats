@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HROps - AI-Powered ATS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .drag-active {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+
+        select option {
+            color: black;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <div class="min-h-screen flex flex-col justify-center items-center py-10 px-4">
+
+        <!-- Header -->
+        <div class="text-center max-w-2xl mb-10">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-4 tracking-tight">HROps AI Recruitment</h1>
+            <p class="text-gray-600">Upload your CV to the specific job, and let our AI-powered engine evaluate it
+                instantly.</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-8">
+
+                <!-- 1. Job Selection -->
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">1. Select the Position You Want to
+                        Apply For</label>
+                    <div class="relative">
+                        <select id="job-select"
+                            class="block w-full bg-gray-50 border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 p-4 transition duration-200 ease-in-out cursor-pointer appearance-none">
+                            <option value="" disabled selected>Loading open positions...</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <!-- Selected Job Details -->
+                    <div id="job-details"
+                        class="hidden mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800 whitespace-pre-line">
+                        <!-- Job details will appear here -->
+                    </div>
+                </div>
+
+                <!-- 2. Candidate Email -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">2. Your Email Address</label>
+                    <input type="email" id="candidate-email" value="test@acmecorp.com"
+                        class="block w-full bg-gray-50 border border-gray-300 text-gray-900 text-md rounded-lg focus:ring-blue-500 focus:border-blue-500 p-4 transition duration-200 ease-in-out"
+                        placeholder="you@example.com">
+                </div>
+
+                <!-- 3. File Upload -->
+                <div class="mb-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">3. Upload Your CV (PDF or DOCX
+                        Only)</label>
+                    <div id="drop-zone"
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 transition duration-200">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-gray-600 font-medium">Drag and drop your file here or <span
+                                class="text-blue-600">click to select</span></p>
+                        <p class="text-xs text-gray-500 mt-2">Maximum file size: 5MB</p>
+                        <input type="file" id="file-input" class="hidden"
+                            accept=".pdf, .docx, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                    </div>
+                </div>
+
+                <!-- Selected File Name -->
+                <div id="file-name-display"
+                    class="hidden text-sm font-medium text-green-600 mb-6 flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>File selected: <span id="file-name-text" class="font-bold">cv.pdf</span></span>
+                </div>
+
+                <!-- 3. Submit Button -->
+                <button id="upload-btn" disabled
+                    class="w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-4 rounded-xl transition duration-200 flex justify-center items-center">
+                    <span id="btn-text">Complete Application</span>
+                    <svg id="loading-spinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" viewBox="0 0 24 24"
+                        fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+
+                <div id="success-msg"
+                    class="hidden mt-4 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 font-medium">
+                    Congratulations! Your CV was successfully submitted. Our AI engine has started the analysis. If you
+                    are found to be a match, we will contact you shortly.
+                </div>
+                <div id="error-msg"
+                    class="hidden mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 font-medium"></div>
+
+            </div>
+        </div>
+
+        <div class="mt-8 text-center text-sm text-gray-500">
+            Powered by Amazon Bedrock & AWS Serverless with ❤️
+        </div>
+    </div>
+
+
+    <script>
+        // API GATEWAY URL
+        const API_URL = "api_gateway_url_placeholder";
+        const JOBS_JSON_URL = "jobs_s3_url_placeholder";
+
+
+
+        const jobSelect = document.getElementById('job-select');
+        const jobDetails = document.getElementById('job-details');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileNameText = document.getElementById('file-name-text');
+        const uploadBtn = document.getElementById('upload-btn');
+        const btnText = document.getElementById('btn-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const successMsg = document.getElementById('success-msg');
+        const errorMsg = document.getElementById('error-msg');
+
+        let selectedFile = null;
+        let internalJobs = [];
+
+        // 1. Load Jobs
+        async function loadJobs() {
+            try {
+                const res = await fetch(JOBS_JSON_URL);
+                const jobs = await res.json();
+                internalJobs = jobs;
+
+                jobSelect.innerHTML = '<option value="" disabled selected>Please select a position...</option>';
+                jobs.forEach(job => {
+                    const opt = document.createElement('option');
+                    opt.value = job.id;
+                    opt.textContent = job.title;
+                    jobSelect.appendChild(opt);
+                });
+            } catch (err) {
+                jobSelect.innerHTML = '<option value="python-backend-dev">Backend Developer (Python)</option>';
+                console.error("Failed to load jobs.json.", err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadJobs);
+
+        // Job selection event
+        jobSelect.addEventListener('change', (e) => {
+            const selectedJobId = e.target.value;
+            const job = internalJobs.find(j => j.id === selectedJobId);
+            if (job) {
+                jobDetails.textContent = job.description;
+                jobDetails.classList.remove('hidden');
+            }
+            checkEnableButton();
+        });
+
+        // 2. File Selection & Drag-Drop Events
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-active');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-active');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-active');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext !== 'pdf' && ext !== 'docx') {
+                showError("Please upload only PDF or DOCX files.");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showError("File size cannot exceed 5MB.");
+                return;
+            }
+
+            hideError();
+            selectedFile = file;
+            fileNameText.textContent = file.name;
+            fileNameDisplay.classList.remove('hidden');
+            checkEnableButton();
+        }
+
+        // 3. Form Validation
+        function checkEnableButton() {
+            if (selectedFile && jobSelect.value) {
+                uploadBtn.disabled = false;
+            } else {
+                uploadBtn.disabled = true;
+            }
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.remove('hidden');
+            successMsg.classList.add('hidden');
+        }
+        function hideError() {
+            errorMsg.classList.add('hidden');
+        }
+
+        // 4. Upload Flow
+        uploadBtn.addEventListener('click', async () => {
+            try {
+                new URL(API_URL);
+            } catch (e) {
+                showError("System configuration error: Invalid API address. Please contact the administrator.");
+                return;
+            }
+
+            try {
+                uploadBtn.disabled = true;
+                btnText.textContent = "Connecting...";
+                loadingSpinner.classList.remove('hidden');
+                hideError();
+                successMsg.classList.add('hidden');
+
+                const jobId = jobSelect.value;
+                const filename = selectedFile.name;
+
+                // Step 1: Pre-signed URL
+                const urlRes = await fetch(`${API_URL}?filename=${encodeURIComponent(filename)}&jobId=${encodeURIComponent(jobId)}`);
+                const urlData = await urlRes.json();
+
+                if (!urlRes.ok || !urlData.uploadUrl) {
+                    throw new Error(urlData.error || "URL generation error!");
+                }
+
+                btnText.textContent = "Uploading to Secure Server...";
+
+                // Step 2: S3 PUT Request
+                const uploadRes = await fetch(urlData.uploadUrl, {
+                    method: 'PUT',
+                    body: selectedFile
+                });
+
+                if (!uploadRes.ok) {
+                    throw new Error("An error occurred while uploading the file to S3.");
+                }
+
+                // SUCCESS
+                successMsg.classList.remove('hidden');
+
+                // Reset form
+                selectedFile = null;
+                jobSelect.value = "";
+                jobDetails.classList.add('hidden');
+                fileNameDisplay.classList.add('hidden');
+                checkEnableButton();
+
+            } catch (err) {
+                console.error(err);
+                showError("An error occurred: " + err.message);
+            } finally {
+                btnText.textContent = "Complete Application";
+                loadingSpinner.classList.add('hidden');
+                checkEnableButton();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

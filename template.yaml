@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: HR Ops - CV Parser and Scorer using Amazon Bedrock
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS,PUT'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+
+Parameters:
+  SnsTopicArn:
+    Type: String
+    Description: ARN of the SNS Topic created manually
+  BedrockModelId:
+    Type: String
+    Default: eu.amazon.nova-pro-v1:0
+    Description: Amazon Bedrock Model Inference Profile ID
+  MinMatchScore:
+    Type: Number
+    Default: 75
+    Description: Minimum score to trigger SNS
+  LambdaRoleArn:
+    Type: String
+    Description: ARN of the IAM Role created for this Lambda
+  ExecutionBucketName:
+    Type: String
+    Description: Name of the existing S3 Bucket
+  JobsBucketName:
+    Type: String
+    Description: Name of the existing S3 Bucket where jobs.json is stored
+
+Resources:
+  CvParserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.lambda_handler
+      Runtime: python3.11
+      Timeout: 60
+      MemorySize: 256
+      Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref SnsTopicArn
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+          MIN_MATCH_SCORE: !Ref MinMatchScore
+          DYNAMODB_TABLE: !Ref CandidateTable
+          JOBS_BUCKET_NAME: !Ref JobsBucketName # Arayüzün/jobs.json'ın barındırıldığı Statik S3 Bucket adı
+
+  CandidateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: hr-ops-candidates
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: JobId
+          AttributeType: S
+        - AttributeName: CandidateId
+          AttributeType: S
+        - AttributeName: Score
+          AttributeType: N
+      KeySchema:
+        - AttributeName: JobId
+          KeyType: HASH
+        - AttributeName: CandidateId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: JobScoreIndex
+          KeySchema:
+            - AttributeName: JobId
+              KeyType: HASH
+            - AttributeName: Score
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  GetUploadUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: get_upload_url.lambda_handler
+      Runtime: python3.11
+      Timeout: 10
+      MemorySize: 128
+      Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          UPLOAD_BUCKET: !Ref ExecutionBucketName
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /get-upload-url
+            Method: get
+
+Outputs:
+  CvParserFunctionArn:
+    Description: "Lambda Function ARN (CV Parser)"
+    Value: !GetAtt CvParserFunction.Arn
+  ApiUrl:
+    Description: "API Gateway endpoint URL for requesting Presigned URLs"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/get-upload-url"
