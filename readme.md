@@ -49,3 +49,24 @@ You can locally generate realistic test resumes (PDF/DOCX formats) using a local
 pip install -r requirements.txt
 python generate_test_data.py
 ```
+
+## Screenshots
+
+<center>
+<small> Apply page and job descriptions</small> <br>
+<img src="https://silverstone1903.github.io/images/hrops-ml-post.png" width="80%" />
+<br>
+
+</center>
+
+<center>
+<br>
+<small> Candidate Evaluation Results and DynamoDB Entry</small> <br>
+<img src="https://silverstone1903.github.io/images/hrops-dynamo.png" width="80%" />
+</center>
+
+<center>
+<small> Email Notification Sent When Threshold is Exceeded</small> <br>
+<img src="https://silverstone1903.github.io/images/hrops-mail.png" width="80%" />
+
+</center>
